@@ -1,3 +1,6 @@
+document.getElementById('search-input').addEventListener('keyup', (e) => {
+    loadVideos(e.target.value)
+})
 // time function 
 function getTime(time){
     const hours = parseInt(time / 3600);
@@ -15,11 +18,18 @@ const loadCategories = () => {
     .catch(error => console.log(error))
 }
 // create load videos categories 
-const loadVideos = () => {
-    fetch('https://openapi.programming-hero.com/api/phero-tube/videos')
+const loadVideos = (searchText = '') => {
+    fetch(`https://openapi.programming-hero.com/api/phero-tube/videos?title=${searchText}`)
     .then(res => res.json())
     .then(v => displayVideos(v.videos))
     .catch(error => console.log(error))
+}
+
+const removeActiveClass = () => {
+    const buttons = document.getElementsByClassName('category-btn');
+    for(let btn of buttons){
+        btn.classList.remove('active');
+    }
 }
 
 loadCategories();
@@ -33,7 +43,7 @@ const displayCategories = (categories) => {
         // create button 
         const btnCard = document.createElement('div');
         btnCard.innerHTML = `
-        <button onclick='buttonClick(${item.category_id})' class="rounded-lg py-2 px-5 bg-[#252525] bg-opacity-15 text-base font-medium text-[#252525] text-opacity-70">
+        <button id="btn-${item.category_id}" onclick='buttonClick(${item.category_id})' class="category-btn rounded-lg py-2 px-5 bg-[#252525] bg-opacity-15 text-base font-medium text-[#252525] text-opacity-70">
         ${item.category}
         </button>
         `;
@@ -42,11 +52,23 @@ const displayCategories = (categories) => {
 };
 
 const buttonClick = (id) => {
-
     fetch(`https://openapi.programming-hero.com/api/phero-tube/category/${id}`)
     .then(res => res.json())
-    .then(v => displayVideos(v.category))
-    .catch(error => console.log(error))
+    .then(v => {
+        // remove class
+        removeActiveClass();
+
+        // Remove 'active' class from all buttons
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+
+        // Add 'active' class to the clicked button
+        const activeBtn = document.getElementById(`btn-${id}`);
+        activeBtn.classList.add('active');
+
+        // Display videos
+        displayVideos(v.category);
+    })
+    .catch(error => console.log(error));
 };
 
 
